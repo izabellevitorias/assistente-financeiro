@@ -10,5 +10,14 @@
 | [Izabelle Vitoria] | [@izabellevitorias] |
 | [Julia Baxega dos Reis] | [@juliabxreis] |
 | [Guilherme Paulino dos Santos Alves] | [@guipaulino0202] |
+
 ## Arquitetura
-> *A ser preenchido na Aula 6*
+
+```mermaid
+flowchart TD
+    A[Usuário registra gasto] --> B[Formulário ou interface]
+    B --> C[Sistema recebe os dados]
+    C --> D[IA categoriza a despesa]
+    D --> E[Dados são armazenados]
+    E --> F[Dashboard mostra histórico e padrões]
+```
