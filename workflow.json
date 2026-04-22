@@ -1,0 +1,183 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Assistente Financeiro",
+        "formDescription": "Informe um gasto para verificar",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Descrição"
+            },
+            {
+              "fieldLabel": "Valor",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Categoria"
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c21295bf-10dd-4598-94ab-d8dc07a31b9d",
+      "name": "On form submission",
+      "webhookId": "ce2650d7-e4d0-49a5-96c1-06e25a46fdbb"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "addc10d4-abec-403e-9f80-5438e9384beb",
+              "leftValue": null,
+              "rightValue": 100,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "dffa6746-afef-49d0-a40f-293ec5795a35",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1f7227c9-cdff-403a-acd5-44a5cf89ad6f",
+              "name": "Mensagem",
+              "value": "Alerta: gasto acima do limite.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "7cbf62ca-1373-42e0-b025-1c78e464031c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1a65247-659d-4d49-8ed1-fd87bd36c1a8",
+              "name": "Mensagem",
+              "value": "Gasto registrado com sucesso.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        96
+      ],
+      "id": "40fc48a2-766f-426a-8f8c-4f9eb7f3328c",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "url": "https://restcountries.com/v3.1/name/brazil",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "5fba5beb-ea8a-40b8-8894-70ba0132a43c",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a5baed15-6a4c-4cf3-8846-69ceedd694f4",
+  "meta": {
+    "instanceId": "725b8f5bc54c63e9768d3ad1dfe957fb46d81c248ef0ec88b78c9e688ffaf237"
+  },
+  "id": "mywFyvG3zoYRswvw",
+  "tags": []
+}
