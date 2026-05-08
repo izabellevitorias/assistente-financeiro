@@ -1,167 +1,193 @@
 {
-  "name": "My workflow",
+  "name": "Rastreador de Gastos com Gemini",
   "nodes": [
     {
       "parameters": {
-        "formTitle": "Assistente Financeiro",
-        "formDescription": "Informe um gasto para verificar",
+        "formTitle": "Registrar Gasto",
+        "formDescription": "Informe os dados do seu gasto para análise inteligente",
         "formFields": {
           "values": [
             {
-              "fieldLabel": "Descrição"
+              "fieldLabel": "Valor do Gasto",
+              "fieldType": "number",
+              "requiredField": true,
+              "placeholder": "Ex: 150.00"
             },
             {
-              "fieldLabel": "Valor",
-              "fieldType": "number"
+              "fieldLabel": "Moeda",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  { "option": "BRL - Real Brasileiro" },
+                  { "option": "USD - Dólar Americano" },
+                  { "option": "EUR - Euro" }
+                ]
+              },
+              "requiredField": true
             },
             {
-              "fieldLabel": "Categoria"
+              "fieldLabel": "Categoria",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  { "option": "Alimentação" },
+                  { "option": "Transporte" },
+                  { "option": "Saúde" },
+                  { "option": "Educação" },
+                  { "option": "Lazer" },
+                  { "option": "Moradia" },
+                  { "option": "Vestuário" },
+                  { "option": "Tecnologia" },
+                  { "option": "Outros" }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Descrição do Gasto",
+              "requiredField": true,
+              "placeholder": "Ex: Almoço no restaurante, Uber para o trabalho..."
+            },
+            {
+              "fieldLabel": "Data do Gasto",
+              "fieldType": "date",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "É um gasto recorrente?",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  { "option": "Não" },
+                  { "option": "Sim - Diário" },
+                  { "option": "Sim - Semanal" },
+                  { "option": "Sim - Mensal" }
+                ]
+              },
+              "requiredField": false
             }
           ]
         },
-        "responseMode": "lastNode",
-        "options": {}
+        "options": {
+          "respondWith": "text",
+          "responseText": " Gasto registrado e analisado com sucesso! Verifique o resultado na execução do workflow."
+        }
       },
+      "id": "form-trigger-node",
+      "name": "Form Trigger - Dados do Gasto",
       "type": "n8n-nodes-base.formTrigger",
-      "typeVersion": 2.5,
-      "position": [
-        0,
-        0
-      ],
-      "id": "c21295bf-10dd-4598-94ab-d8dc07a31b9d",
-      "name": "On form submission",
-      "webhookId": "ce2650d7-e4d0-49a5-96c1-06e25a46fdbb"
+      "typeVersion": 2.2,
+      "position": [240, 300],
+      "webhookId": "expense-tracker-webhook"
     },
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "addc10d4-abec-403e-9f80-5438e9384beb",
-              "leftValue": null,
-              "rightValue": 100,
-              "operator": {
-                "type": "number",
-                "operation": "gt"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
+        "method": "GET",
+        "url": "=https://economia.awesomeapi.com.br/last/{{ $('Form Trigger - Dados do Gasto').item.json['Moeda'].split(' ')[0] !== 'BRL' ? $('Form Trigger - Dados do Gasto').item.json['Moeda'].split(' ')[0] + '-BRL' : 'USD-BRL,EUR-BRL' }}",
+        "options": {
+          "timeout": 10000
+        }
       },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        416,
-        0
-      ],
-      "id": "dffa6746-afef-49d0-a40f-293ec5795a35",
-      "name": "If"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "1f7227c9-cdff-403a-acd5-44a5cf89ad6f",
-              "name": "Mensagem",
-              "value": "Alerta: gasto acima do limite.",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        624,
-        -96
-      ],
-      "id": "7cbf62ca-1373-42e0-b025-1c78e464031c",
-      "name": "Edit Fields"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "f1a65247-659d-4d49-8ed1-fd87bd36c1a8",
-              "name": "Mensagem",
-              "value": "Gasto registrado com sucesso.",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        624,
-        96
-      ],
-      "id": "40fc48a2-766f-426a-8f8c-4f9eb7f3328c",
-      "name": "Edit Fields1"
-    },
-    {
-      "parameters": {
-        "url": "https://restcountries.com/v3.1/name/brazil",
-        "options": {}
-      },
+      "id": "http-awesomeapi-node",
+      "name": "AwesomeAPI - Cotação do Dia",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        208,
-        0
-      ],
-      "id": "5fba5beb-ea8a-40b8-8894-70ba0132a43c",
-      "name": "HTTP Request"
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const formData = $('Form Trigger - Dados do Gasto').item.json;\nconst apiData = $input.item.json;\n\nconst moedaInput = formData['Moeda'].split(' ')[0];\nconst valorOriginal = parseFloat(formData['Valor do Gasto']);\n\nlet valorEmBRL = valorOriginal;\nlet cotacaoInfo = 'Gasto já em Real Brasileiro';\nlet taxaCambio = 1;\n\nif (moedaInput !== 'BRL') {\n  const chaveAPI = moedaInput === 'USD' ? 'USDBRL' : 'EURBRL';\n  if (apiData[chaveAPI]) {\n    taxaCambio = parseFloat(apiData[chaveAPI].bid);\n    valorEmBRL = valorOriginal * taxaCambio;\n    const nomeCompleto = moedaInput === 'USD' ? 'Dólar Americano' : 'Euro';\n    cotacaoInfo = `1 ${nomeCompleto} = R$ ${taxaCambio.toFixed(4)} (cotação atual)`;\n  }\n}\n\nconst hoje = new Date();\nconst dataGasto = new Date(formData['Data do Gasto']);\nconst diasAtras = Math.floor((hoje - dataGasto) / (1000 * 60 * 60 * 24));\nlet periodoTexto = diasAtras === 0 ? 'hoje' : diasAtras === 1 ? 'ontem' : `há ${diasAtras} dias`;\n\nconst recorrente = formData['É um gasto recorrente?'] || 'Não';\nlet projecaoMensal = valorEmBRL;\nif (recorrente === 'Sim - Diário') projecaoMensal = valorEmBRL * 30;\nelse if (recorrente === 'Sim - Semanal') projecaoMensal = valorEmBRL * 4;\nelse if (recorrente === 'Sim - Mensal') projecaoMensal = valorEmBRL;\n\nreturn {\n  json: {\n    valorOriginal,\n    moedaOriginal: moedaInput,\n    valorEmBRL: parseFloat(valorEmBRL.toFixed(2)),\n    cotacaoInfo,\n    taxaCambio,\n    categoria: formData['Categoria'],\n    descricao: formData['Descrição do Gasto'],\n    dataGasto: formData['Data do Gasto'],\n    periodoTexto,\n    recorrente,\n    projecaoMensal: parseFloat(projecaoMensal.toFixed(2)),\n    resumoContexto: `DADOS DO GASTO:\\n- Valor: ${moedaInput} ${valorOriginal} (R$ ${valorEmBRL.toFixed(2)})\\n- Câmbio: ${cotacaoInfo}\\n- Categoria: ${formData['Categoria']}\\n- Descrição: ${formData['Descrição do Gasto']}\\n- Data: ${formData['Data do Gasto']} (${periodoTexto})\\n- Recorrência: ${recorrente}\\n- Projeção mensal: R$ ${projecaoMensal.toFixed(2)}`\n  }\n};\n"
+      },
+      "id": "code-process-node",
+      "name": "Processar e Calcular Dados",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [760, 300]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gemini-2.0-flash-lite",
+          "mode": "list",
+          "cachedResultName": "Gemini 2.0 Flash Lite"
+        },
+        "options": {},
+        "messages": {
+          "values": [
+            {
+              "role": "model",
+              "content": "Você é um assistente financeiro pessoal especializado em análise de gastos e finanças pessoais brasileiras. Seu papel é analisar cada gasto informado pelo usuário e fornecer: 1) Uma avaliação clara se o gasto é razoável para a categoria, 2) Alertas importantes se necessário, 3) Dicas práticas e contextualizadas para economia, 4) Uma análise de impacto mensal quando o gasto é recorrente. Responda sempre em português brasileiro, de forma prática, direta e amigável. Use emojis para tornar a resposta mais visual. Não invente dados — baseie-se apenas nas informações fornecidas."
+            },
+            {
+              "role": "user",
+              "content": "={{ $('Processar e Calcular Dados').item.json.resumoContexto }}\n\nCom base nesses dados, por favor:\n1.  Avalie se esse valor é razoável para a categoria \"{{ $('Processar e Calcular Dados').item.json.categoria }}\"\n2.  Aponte algum alerta ou ponto de atenção\n3.  Dê 2-3 dicas práticas para otimizar esse tipo de gasto\n4.  Se for recorrente ({{ $('Processar e Calcular Dados').item.json.recorrente }}), mostre o impacto anual (R$ {{ ($('Processar e Calcular Dados').item.json.projecaoMensal * 12).toFixed(2) }})\n5.  Dê uma nota de 1 a 10 para a saúde financeira deste gasto"
+            }
+          ]
+        }
+      },
+      "id": "gemini-node",
+      "name": "Gemini - Análise Financeira",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [1020, 300],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "gemini-credential",
+          "name": "Google Gemini - Expense Tracker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const processedData = $('Processar e Calcular Dados').item.json;\nconst geminiResponse = $input.item.json;\n\nconst analiseTexto = geminiResponse.content || geminiResponse.text || JSON.stringify(geminiResponse);\n\nconst relatorioFinal = {\n  status: 'sucesso',\n  timestamp: new Date().toISOString(),\n  gasto: {\n    descricao: processedData.descricao,\n    categoria: processedData.categoria,\n    valorOriginal: `${processedData.moedaOriginal} ${processedData.valorOriginal}`,\n    valorBRL: `R$ ${processedData.valorEmBRL.toFixed(2)}`,\n    cotacao: processedData.cotacaoInfo,\n    data: processedData.dataGasto,\n    recorrente: processedData.recorrente,\n    projecaoMensal: `R$ ${processedData.projecaoMensal.toFixed(2)}`,\n    projecaoAnual: `R$ ${(processedData.projecaoMensal * 12).toFixed(2)}`\n  },\n  analiseGemini: analiseTexto,\n  mensagemFormatada: `\\n${'='.repeat(50)}\\n ANÁLISE DO SEU GASTO\\n${'='.repeat(50)}\\n\\n Descrição: ${processedData.descricao}\\n  Categoria: ${processedData.categoria}\\n Valor: ${processedData.moedaOriginal} ${processedData.valorOriginal} → R$ ${processedData.valorEmBRL.toFixed(2)}\\n Câmbio: ${processedData.cotacaoInfo}\\n Data: ${processedData.dataGasto} (${processedData.periodoTexto})\\n Recorrência: ${processedData.recorrente}\\n\\n${'─'.repeat(50)}\\n ANÁLISE DO ASSISTENTE FINANCEIRO (Gemini)\\n${'─'.repeat(50)}\\n\\n${analiseTexto}\\n\\n${'='.repeat(50)}`\n};\n\nreturn { json: relatorioFinal };\n"
+      },
+      "id": "format-output-node",
+      "name": "Formatar Relatório Final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1280, 300]
     }
   ],
-  "pinData": {},
   "connections": {
-    "On form submission": {
+    "Form Trigger - Dados do Gasto": {
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "AwesomeAPI - Cotação do Dia",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If": {
+    "AwesomeAPI - Cotação do Dia": {
       "main": [
         [
           {
-            "node": "Edit Fields",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Edit Fields1",
+            "node": "Processar e Calcular Dados",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HTTP Request": {
+    "Processar e Calcular Dados": {
       "main": [
         [
           {
-            "node": "If",
+            "node": "Gemini - Análise Financeira",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini - Análise Financeira": {
+      "main": [
+        [
+          {
+            "node": "Formatar Relatório Final",
             "type": "main",
             "index": 0
           }
@@ -169,15 +195,23 @@
       ]
     }
   },
-  "active": false,
+  "pinData": {},
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate"
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
   },
-  "versionId": "a5baed15-6a4c-4cf3-8846-69ceedd694f4",
-  "meta": {
-    "instanceId": "725b8f5bc54c63e9768d3ad1dfe957fb46d81c248ef0ec88b78c9e688ffaf237"
-  },
-  "id": "mywFyvG3zoYRswvw",
-  "tags": []
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "id": "expense-tracker-tag",
+      "name": "Expense Tracker"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2026-01-01T00:00:00.000Z",
+  "versionId": "1"
 }

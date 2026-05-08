@@ -22,13 +22,18 @@ O usuário informa dados sobre seus gastos, como valor, categoria, descrição o
 
 ```mermaid
 flowchart TD
-    A[Usuário informa dados do gasto] --> B[Formulário ou Webhook no N8N]
-    B --> C[N8N recebe e organiza os dados]
-    C --> D{Precisa consultar APIs externas?}
-    D -->|Sim| E[APIs externas]
-    D -->|Não| F[Prepara dados para o Gemini]
-    E --> F[Prepara dados para o Gemini]
-    F --> G[Gemini analisa as informações]
-    G --> H[N8N formata a resposta]
-    H --> I[Usuário recebe o resultado]
+    A[Usuário preenche formulário<br>Valor, moeda, categoria, descrição, data]
+    B[N8N recebe os dados<br>Organiza campos do formulário]
+    C[Frankfurter API - Cotação em tempo real<br>GET api.frankfurter.dev/v2/latest?from=USD&to=BRL<br>Gratuita - sem chave - dados reais]
+    D[Processar e calcular dados<br>Converte moeda para BRL com taxa real<br>Calcula projeção mensal e anual]
+    E[Gemini - Análise financeira<br>Avalia razoabilidade, alertas e dicas<br>Nota 1 a 10 e impacto anual]
+    F[N8N formata o relatório<br>Monta resumo com câmbio e análise]
+    G[Usuário recebe o resultado]
+
+    A -->|Form Trigger| B
+    B --> C
+    C --> D
+    D -->|Prompt com contexto| E
+    E --> F
+    F --> G
 ```
