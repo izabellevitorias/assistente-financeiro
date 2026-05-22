@@ -162,7 +162,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const processedData = $('Processar e Calcular Dados').item.json;\nconst geminiResponse = $input.item.json;\n\nconst analiseTexto = geminiResponse.content || geminiResponse.text || JSON.stringify(geminiResponse);\n\nconst relatorioFinal = {\n  status: 'sucesso',\n  timestamp: new Date().toISOString(),\n  gasto: {\n    descricao: processedData.descricao,\n    categoria: processedData.categoria,\n    valorOriginal: `${processedData.moedaOriginal} ${processedData.valorOriginal}`,\n    valorBRL: `R$ ${processedData.valorEmBRL.toFixed(2)}`,\n    cotacao: processedData.cotacaoInfo,\n    data: processedData.dataGasto,\n    recorrente: processedData.recorrente,\n    projecaoMensal: `R$ ${processedData.projecaoMensal.toFixed(2)}`,\n    projecaoAnual: `R$ ${(processedData.projecaoMensal * 12).toFixed(2)}`\n  },\n  analiseGemini: analiseTexto,\n  mensagemFormatada: `\\n${'='.repeat(50)}\\n ANÁLISE DO SEU GASTO\\n${'='.repeat(50)}\\n\\n Descrição: ${processedData.descricao}\\n  Categoria: ${processedData.categoria}\\n Valor: ${processedData.moedaOriginal} ${processedData.valorOriginal} → R$ ${processedData.valorEmBRL.toFixed(2)}\\n Câmbio: ${processedData.cotacaoInfo}\\n Data: ${processedData.dataGasto} (${processedData.periodoTexto})\\n Recorrência: ${processedData.recorrente}\\n\\n${'─'.repeat(50)}\\n ANÁLISE DO ASSISTENTE FINANCEIRO (Gemini)\\n${'─'.repeat(50)}\\n\\n${analiseTexto}\\n\\n${'='.repeat(50)}`\n};\n\nreturn { json: relatorioFinal };\n"
+        "jsCode": "const processedData = $('Processar e Calcular Dados').first().json;\nconst geminiResponse = $input.first().json;\n\n \n\nconst analiseTexto =\n  geminiResponse.output ||\n  geminiResponse.content ||\n  geminiResponse.text ||\n  geminiResponse.response ||\n  JSON.stringify(geminiResponse);\n\n \n\nconst relatorioFinal = {\n  status: 'sucesso',\n  timestamp: new Date().toISOString(),\n  gasto: {\n    descricao: processedData.descricao,\n    categoria: processedData.categoria,\n    valorOriginal: `${processedData.moedaOriginal} ${processedData.valorOriginal}`,\n    valorBRL: `R$ ${Number(processedData.valorEmBRL).toFixed(2)}`,\n    cotacao: processedData.cotacaoInfo,\n    data: processedData.dataGasto,\n    recorrente: processedData.recorrente,\n    projecaoMensal: `R$ ${Number(processedData.projecaoMensal).toFixed(2)}`,\n    projecaoAnual: `R$ ${(Number(processedData.projecaoMensal) * 12).toFixed(2)}`\n  },\n  analiseGemini: analiseTexto,\n  mensagemFormatada: `\nANÁLISE DO GASTO\n\n \n\nResumo\nDescrição: ${processedData.descricao}\nCategoria: ${processedData.categoria}\nData: ${processedData.dataGasto}\n\n \n\nValores\nValor informado: ${processedData.moedaOriginal} ${processedData.valorOriginal}\nValor convertido: R$ ${Number(processedData.valorEmBRL).toFixed(2)}\nCotação usada: ${processedData.cotacaoInfo}\n\n \n\nRecorrência\nFrequência: ${processedData.recorrente}\nProjeção mensal: R$ ${Number(processedData.projecaoMensal).toFixed(2)}\nProjeção anual: R$ ${(Number(processedData.projecaoMensal) * 12).toFixed(2)}\n\n \n\nAnálise financeira\n${analiseTexto}\n\n \n\nRecomendação\nAvalie se esse gasto é essencial. Caso seja recorrente, compare alternativas mais baratas para reduzir o impacto mensal.\n`\n};\n\n \n\nreturn [\n  {\n    json: relatorioFinal\n  }\n];"
       },
       "id": "a03f22ff-860c-4e4f-9b36-df83236b97d5",
       "name": "Formatar Relatório Final",
@@ -176,7 +176,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Analise os dados financeiros abaixo e gere uma resposta objetiva em português.\n\n \n\nDados recebidos:\n{{ JSON.stringify($json) }}\n\n \n\nExplique:\n1. O valor informado pelo usuário\n2. A moeda\n3. A cotação utilizada\n4. O valor convertido em reais\n5. Uma análise simples do gasto\n6. Uma recomendação financeira curta",
+        "text": "=Analise os dados financeiros abaixo e gere uma resposta objetiva em português.\n\n \n\nDados recebidos:\n{{ JSON.stringify($json) }}\n\n \n\nExplique:\n1. O valor informado pelo usuário\n2. A moeda\n3. A cotação utilizada\n4. O valor convertido em reais\n5. Uma análise simples do gasto\n6. Uma recomendação financeira curta\nResponda sem markdown, sem asteriscos e sem numeração exagerada.\nUse frases curtas e organizadas.",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -187,6 +187,23 @@
       ],
       "id": "2feb823f-c6e3-4bd9-9eed-d3d47c27284d",
       "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Análise do gasto concluída",
+        "completionMessage": "={{ $json.mensagemFormatada }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        1280,
+        0
+      ],
+      "id": "c75a71c1-afd6-4135-aba0-48ff44297059",
+      "name": "Form",
+      "webhookId": "39fcc407-33ae-4081-a07d-afa242e2dfb3"
     }
   ],
   "pinData": {},
@@ -245,6 +262,17 @@
           }
         ]
       ]
+    },
+    "Formatar Relatório Final": {
+      "main": [
+        [
+          {
+            "node": "Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -252,7 +280,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "1d0341d3-90e9-4af0-83ca-a29aa6955566",
+  "versionId": "9904edc0-6dca-40a4-8ee4-f6b76ccf1912",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "90703a3c11c740349fe95ad954e5ca9811675a4dc09b1555dc0864ca5d596764"
